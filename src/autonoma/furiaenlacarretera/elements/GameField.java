@@ -20,10 +20,10 @@ import javax.swing.Timer;
  * @author Kamii
  */
 public class GameField extends SpriteContainer {
-
-    /**
-     * Atributos
-     */
+    private static final int LADO_IZQUIERDO_CARRIL = 165;
+    private static final int LADO_DERECHO_CARRIL = 360;
+    private static final int ALTURA_OBJETO_PERSONA = 50;
+    
     private EscritorArchivoTextoPlano escritor;
     private LectorArchivoTextoPlano lector;
     private Jugador jugador;
@@ -116,10 +116,10 @@ public class GameField extends SpriteContainer {
     public void addGasolina() {
         int minX = 165; // Por ejemplo, límite izquierdo del carril
         int maxX = 360;
-        int width = 50; // tamaño estimado, ajusta según tu sprite
-        int height = 50;
         int intentosMaximos = 100;
         int intentos = 0;
+        int width = 50; // tamaño estimado, ajusta según tu sprite
+        int height = 50;
 
         int jugadorY = jugador != null ? jugador.getY() : getHeight();
 
@@ -151,7 +151,6 @@ public class GameField extends SpriteContainer {
     public void addPerson() {
         int minX = 165;
         int maxX = 360;
-
         int intentos = 0;
         int maxIntentos = 50;
         int jugadorY = jugador != null ? jugador.getY() : getHeight();
@@ -185,7 +184,6 @@ public class GameField extends SpriteContainer {
     public void addCurrency() {
         int minX = 165;
         int maxX = 360;
-
         int intentos = 0;
         int maxIntentos = 50;
         int jugadorY = jugador != null ? jugador.getY() : getHeight();
