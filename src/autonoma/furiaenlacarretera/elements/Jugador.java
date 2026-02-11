@@ -30,6 +30,9 @@ public class Jugador extends Sprite {
      */
     public static final int WIDTH_JUGADOR = 50;
     public static final int HEIGH_JUGADOR = 50;
+    private static final int LIMITE_IZQUIERDO = 165;
+    private static final int LIMITE_DERECHO = 360;
+
     /**
      * atributo de puntaje
      */
@@ -55,18 +58,15 @@ public class Jugador extends Sprite {
     /**
      * constructor
      */
-    public Jugador(int x, int y, int width, int height) {
-        super(x, y, height, width);
-        this.puntaje = 0;
-        this.moto = new Moto();
-        setImage("chicaMoto.png");
-        imagenBuffer = new BufferedImage(WIDTH_JUGADOR,
-                HEIGH_JUGADOR,
-                BufferedImage.TYPE_INT_RGB
-        );
-        //obtenemos los graficos
-        g_imagenBuffer = imagenBuffer.getGraphics();
-    }
+    public Jugador(Dimensiones dimensiones) {
+    super(
+        dimensiones.getX(),
+        dimensiones.getY(),
+        dimensiones.getHeight(),
+        dimensiones.getWidth()
+    );
+}
+
 
     public void setMoto(Moto moto) {
         this.moto = moto;
@@ -83,7 +83,6 @@ public class Jugador extends Sprite {
     public void setCantidadVidas(int cantidadVidas) {
         this.cantidadVidas = cantidadVidas;
     }
-    
 
     public int getPuntaje() {
         return puntaje;
@@ -92,10 +91,10 @@ public class Jugador extends Sprite {
     public void setPuntaje(int score) {
         this.puntaje = score;
     }
+
     public void recogerMoneda() {
         monedas++;
     }
-    
 
     public int getMonedas() {
         return monedas;
@@ -104,7 +103,6 @@ public class Jugador extends Sprite {
     public void setMonedas(int monedas) {
         this.monedas = monedas;
     }
-    
 
     @Override
     public void paint(Graphics g) {
@@ -115,11 +113,11 @@ public class Jugador extends Sprite {
         this.puntaje += score;
     }
 
-    public Thread consumirConbustible() {
+    public Thread consumirCombustible() {
         if (moto != null) {
-            hilo=moto.disminuirCombustible();
+            return moto.consumirCombustible();
         }
-        return hilo;
+        return null;
     }
 
     public void recargarConbustible(int cantindad) {
@@ -127,22 +125,41 @@ public class Jugador extends Sprite {
     }
 
     public void mover(int direction) {
-        switch (direction) {
-            
-            case KeyEvent.VK_LEFT:
-                if (getX() - STEP >= 165) {
-                    setX(getX() - STEP);
-                }
-                break;
-
-            case KeyEvent.VK_RIGHT:
-                if (getX() + width + STEP <= 360) {
-                    setX(getX() + STEP);
-                }
-                break;
+        if (esMovimientoIzquierda(direction)) {
+            moverIzquierda();
+        } else if (esMovimientoDerecha(direction)) {
+            moverDerecha();
         }
     }
-    
+
+    private boolean esMovimientoIzquierda(int direction) {
+        return direction == KeyEvent.VK_LEFT;
+    }
+
+    private boolean esMovimientoDerecha(int direction) {
+        return direction == KeyEvent.VK_RIGHT;
+    }
+
+    private void moverIzquierda() {
+        if (puedeMoverIzquierda()) {
+            setX(getX() - STEP);
+        }
+    }
+
+    private void moverDerecha() {
+        if (puedeMoverDerecha()) {
+            setX(getX() + STEP);
+        }
+    }
+
+    private boolean puedeMoverIzquierda() {
+        return getX() - STEP >= LIMITE_IZQUIERDO;
+    }
+
+    private boolean puedeMoverDerecha() {
+        return getX() + width + STEP <= LIMITE_DERECHO;
+    }
+
     /**
      * Disminuye una vida al jugador.
      * Si se queda sin vidas, podrías lanzar un evento o manejarlo desde GameField.
@@ -159,7 +176,5 @@ public class Jugador extends Sprite {
     public boolean estaMuerto() {
         return cantidadVidas <= 0;
     }
-
-    
 
 }

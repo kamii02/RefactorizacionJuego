@@ -48,9 +48,9 @@ public class GameField extends SpriteContainer {
     /**
      * Metodos de acceso
      */
-//    public Player getPlayer() {
-//        return player;
-//    }
+    // public Player getPlayer() {
+    // return player;
+    // }
     public boolean getPartidaTerminada() {
         return partidaTerminada;
     }
@@ -62,6 +62,7 @@ public class GameField extends SpriteContainer {
     public List<Sprite> getSprites() {
         return sprites;
     }
+
     /**
      * metodo para validar si hay colision
      */
@@ -73,7 +74,7 @@ public class GameField extends SpriteContainer {
         }
         return false;
     }
-     
+
     public Jugador getJugador() {
         return jugador;
     }
@@ -106,7 +107,8 @@ public class GameField extends SpriteContainer {
         }
 
         if (intentos == intentosMaximos) {
-            //System.out.println("No se pudo colocar el carro sin superposición tras " + intentosMaximos + " intentos.");
+            // System.out.println("No se pudo colocar el carro sin superposición tras " +
+            // intentosMaximos + " intentos.");
         }
     }
 
@@ -140,7 +142,8 @@ public class GameField extends SpriteContainer {
         }
 
         if (intentos == intentosMaximos) {
-            //System.out.println("No se pudo colocar la gasolina sin superposición tras " + intentosMaximos + " intentos.");
+            // System.out.println("No se pudo colocar la gasolina sin superposición tras " +
+            // intentosMaximos + " intentos.");
         }
 
     }
@@ -167,14 +170,17 @@ public class GameField extends SpriteContainer {
             intentos++;
         }
     }
+
     /**
      * Metodo para agregar el jugador a la pista
      */
     public void addJugador() {
-        int startX = width / 2 - 25;  // centrado horizontalmente, restando la mitad del ancho del jugador
-        int startY = height - 100;    // cerca de la parte inferior
+        int startX = width / 2 - 25; // centrado horizontalmente, restando la mitad del ancho del jugador
+        int startY = height - 100; // cerca de la parte inferior
 
-        this.jugador = new Jugador(startX, startY, 50, 40);
+        Dimensiones dim = new Dimensiones(startX, startY, 50, 40);
+        this.jugador = new Jugador(dim);
+
         this.jugador.setMoto(new Moto());
         this.sprites.add(jugador);
     }
@@ -214,13 +220,14 @@ public class GameField extends SpriteContainer {
             // Posición Y debajo del campo de juego (para que suba persiguiendo)
             int startY = this.height + 50;
             this.police = new Police(startX, startY, Police.WIDTH, Police.HEIGHT);
-            this.police.setGamefield(this);  //referencia del gamefield donde esta
+            this.police.setGamefield(this); // referencia del gamefield donde esta
             this.police.setDelay(50);
             this.police.iniciarPersecucion();
             this.sprites.add(police);
-            //System.out.println("Policía agregado a la pista");
+            // System.out.println("Policía agregado a la pista");
         }
     }
+
     /**
      * Metodo para eliminar el policia a la pista
      */
@@ -229,9 +236,10 @@ public class GameField extends SpriteContainer {
             sprites.remove(police);
             police.stop();
             police = null;
-            //System.out.println("Policía eliminado ");
+            // System.out.println("Policía eliminado ");
         }
     }
+
     /**
      * Metodo para iniciar el contador del tiempo
      */
@@ -242,7 +250,7 @@ public class GameField extends SpriteContainer {
                     Thread.sleep(2000);
                     if (jugador != null) {
                         jugador.aumentarPuntaje(1);
-                        //System.out.println("Puntaje: " + jugador.getPuntaje());
+                        // System.out.println("Puntaje: " + jugador.getPuntaje());
                         refresh();
                     }
                 } catch (InterruptedException e) {
@@ -252,6 +260,7 @@ public class GameField extends SpriteContainer {
         });
         contadorTiempo.start();
     }
+
     /**
      * Metodo para iniciar la gasolina del jugador
      */
@@ -272,7 +281,7 @@ public class GameField extends SpriteContainer {
         ponerGasolina.start();
         return ponerGasolina;
     }
-    
+
     public void eliminarElement(ElementType element) {
         sprites.remove(element);
     }
@@ -301,7 +310,7 @@ public class GameField extends SpriteContainer {
         int distanciaDeseadaY = 50; // la distancia vertical que debe mantener
         int objetivoY = jugador.getY() + distanciaDeseadaY;
         int dy = objetivoY - police.getY();
-        //dice qué tan lejos está verticalmente el policía de su objetivo.
+        // dice qué tan lejos está verticalmente el policía de su objetivo.
         if (Math.abs(dy) > speed) {
             // Solo se mueve si aún no está cerca de la distancia deseada
             if (dy > 0) {
@@ -312,6 +321,7 @@ public class GameField extends SpriteContainer {
         }
 
     }
+
     /**
      * metodo que valida si el policia atrapo a el jugador
      */
@@ -341,9 +351,9 @@ public class GameField extends SpriteContainer {
     public void finalizarPartida() {
         this.partidaTerminada = true; // Detener la lógica del juego
         if (contadorTiempo != null && contadorTiempo.isAlive()) {
-            contadorTiempo.interrupt();  // Detener el hilo correctamente
+            contadorTiempo.interrupt(); // Detener el hilo correctamente
         }
-        Thread hiloCombustible = jugador.consumirConbustible();
+        Thread hiloCombustible = jugador.consumirCombustible();
         if (hiloCombustible != null && hiloCombustible.isAlive()) {
             hiloCombustible.interrupt(); // Detener el hilo correctamente
         }
@@ -355,14 +365,14 @@ public class GameField extends SpriteContainer {
 
         this.sprites.clear();
         this.refresh();
-        //System.out.println("Partida finalizada.");
+        // System.out.println("Partida finalizada.");
         if (gameContainer instanceof GameWindow) {
             ((GameWindow) gameContainer).terminarPartida();
         }
     }
 
     public void menejarCombustible() {
-        jugador.consumirConbustible();
+        jugador.consumirCombustible();
     }
 
     /**
@@ -383,7 +393,7 @@ public class GameField extends SpriteContainer {
             return;
         }
 
-        //Mover obstaculos, monedas y demás elementos hacia abajo (simulando avance)
+        // Mover obstaculos, monedas y demás elementos hacia abajo (simulando avance)
         // 1. Mover obstáculos, monedas y demás elementos hacia abajo (simulando avance)
         for (int i = 0; i < sprites.size(); i++) {
             Sprite sprite = sprites.get(i);
@@ -421,7 +431,7 @@ public class GameField extends SpriteContainer {
         if (police != null) {
             moverPoliceJugador();
         }
-        refresh();  // Refresca pantalla
+        refresh(); // Refresca pantalla
     }
 
     /**
@@ -451,7 +461,7 @@ public class GameField extends SpriteContainer {
      * colección original durante la iteración.
      */
     private void processCollisionMotobike() {
-        List<Sprite> copiaSprites = new ArrayList<>(sprites);  // Copia para evitar ConcurrentModificationException
+        List<Sprite> copiaSprites = new ArrayList<>(sprites); // Copia para evitar ConcurrentModificationException
 
         for (Sprite s : copiaSprites) {
             if (s instanceof ElementType) {
@@ -496,9 +506,10 @@ public class GameField extends SpriteContainer {
                         }
                         sprites.remove(element);
                     }
-//                    else {
-//                        System.out.println("ERROR: GameField.processCollisionMotorbike. Tipo desconocido de ElementType");
-//                    }
+                    // else {
+                    // System.out.println("ERROR: GameField.processCollisionMotorbike. Tipo
+                    // desconocido de ElementType");
+                    // }
                 }
             }
         }
@@ -539,7 +550,7 @@ public class GameField extends SpriteContainer {
                 sprite.paint(g);
             }
         }
-        //jugador.paint(g);
+        // jugador.paint(g);
     }
 
     /**
@@ -554,7 +565,7 @@ public class GameField extends SpriteContainer {
      * Refresca el área de juego para actualizar la pantalla.
      *
      * @param code Código de la tecla presionada, correspondiente a las
-     * constantes de KeyEvent.
+     *             constantes de KeyEvent.
      */
     public void keyPressed(int code) {
         if (code == KeyEvent.VK_LEFT

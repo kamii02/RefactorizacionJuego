@@ -11,7 +11,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 /**
- *@author Valerie Moreno
+ * @author Valerie Moreno
  * @since 21/5/2025
  * @version 1.0.0
  */
@@ -26,11 +26,12 @@ public class Moto {
     private int fuel;
     private Thread contadorGasolina;
     private boolean estaSinConbustible;
+
     /**
      * constructor
      */
-    public Moto() {    
-        this.fuel=100;
+    public Moto() {
+        this.fuel = 100;
         this.estaSinConbustible = false;
     }
 
@@ -49,23 +50,20 @@ public class Moto {
     public void setEstaSinConbustible(boolean estaSinConbustible) {
         this.estaSinConbustible = estaSinConbustible;
     }
-    
 
-    
     /**
      * metodo de disminuir comburtible
      */
     public Thread disminuirCombustible() {
-        contadorGasolina = new Thread(()->{
-            while (!estaSinConbustible){
+        contadorGasolina = new Thread(() -> {
+            while (!estaSinConbustible) {
                 try {
                     Thread.sleep(3000);
-                    if(fuel>0){
-                        fuel-=10;
+                    if (fuel > 0) {
+                        fuel -= 10;
                         System.out.println(fuel);
-                    }
-                    else{
-                        estaSinConbustible=true;
+                    } else {
+                        estaSinConbustible = true;
                     }
                 } catch (InterruptedException e) {
                     break;
@@ -79,10 +77,14 @@ public class Moto {
     /**
      * metodo de recargar comburtible
      */
-    public void recargarCombustible(int cantidad){
+    public void recargarCombustible(int cantidad) {
         if (cantidad >= 5) {
             this.fuel = 100;
             estaSinConbustible = false;
         }
+    }
+
+    public Thread consumirCombustible() {
+        return disminuirCombustible();
     }
 }
