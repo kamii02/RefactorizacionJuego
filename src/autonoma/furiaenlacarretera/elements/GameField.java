@@ -384,7 +384,6 @@ public class GameField extends SpriteContainer {
         }
 
         //Mover obstaculos, monedas y demás elementos hacia abajo (simulando avance)
-        // 1. Mover obstáculos, monedas y demás elementos hacia abajo (simulando avance)
         for (int i = 0; i < sprites.size(); i++) {
             Sprite sprite = sprites.get(i);
             if (sprite instanceof ElementType && !(sprite instanceof Police)) {
@@ -428,81 +427,94 @@ public class GameField extends SpriteContainer {
      * Procesa las colisiones entre la motocicleta del jugador y los distintos
      * elementos del campo de juego.
      *
-     * Recorre una copia de la lista de sprites para evitar
-     * ConcurrentModificationException. Según el tipo de elemento con el que se
-     * colisiona, se ejecutan distintas acciones:
-     *
-     * - Si colisiona con un Car o una Person: - Reproduce un efecto de sonido
-     * aleatorio. - Resta una vida al jugador. - Elimina el objeto colisionado.
-     * - Si el jugador queda sin vidas, finaliza la partida. - Si no, añade una
-     * policía y ejecuta el proceso PoliceCaughtProcess.
-     *
-     * - Si colisiona con una Currency: - Reproduce el sonido de recogida de
-     * moneda. - Incrementa la cantidad de monedas del jugador. - Elimina la
-     * moneda recogida.
-     *
-     * - Si colisiona con una Gasolina: - Verifica si el jugador tiene al menos
-     * 5 monedas. - Si tiene, reproduce sonido de carga, recarga combustible y
-     * descuenta monedas. - Si no, muestra un mensaje temporal en pantalla
-     * indicando que no tiene monedas suficientes. - Elimina la gasolina del
-     * campo de juego.
-     *
-     * La copia de la lista se utiliza para evitar errores al modificar la
-     * colección original durante la iteración.
+     * Se utiliza una copia de la lista de sprites para evitar
+     * ConcurrentModificationException. Dependiendo del tipo de elemento con el que
+     * se colisiona, se ejecutan diferentes acciones.
      */
     private void processCollisionMotobike() {
-        List<Sprite> copiaSprites = new ArrayList<>(sprites);  // Copia para evitar ConcurrentModificationException
+        List<Sprite> copiaSprites = copiarSprites();
 
-        for (Sprite s : copiaSprites) {
-            if (s instanceof ElementType) {
-                ElementType element = (ElementType) s;
+        for (Sprite sprite : copiaSprites) {
+            if (!esElementoColisionable(sprite)) {
+                continue;
+            }
 
-                if (jugador.checkCollision(element)) {
-                    if (element instanceof Car || element instanceof Person) {
-                        ReproducirSonido.playRandomEffectSound();
-                        // Reducir vida al colisionar con Car o Person
-                        jugador.eliminarVida();
+            ElementType element = (ElementType) sprite;
 
-                        // Eliminar el elemento tras la colisión
-                        sprites.remove(element);
-
-                        // Verificar si el jugador se quedó sin vidas
-                        if (jugador.getCantidadVidas() <= 0) {
-                            finalizarPartida();
-                            return;
-                        }
-
-                        // Añadir policía tras chocar con Car o Person
-                        addPolice();
-                        PoliceCaughtProcess();
-
-                    } else if (element instanceof Currency) {
-                        // Sumar monedas y eliminar moneda
-                        ((Currency) element).playCurrencySound();
-                        jugador.recogerMoneda(); // acumula monedas en el jugador
-                        sprites.remove(element);
-
-                    } else if (element instanceof Gasolina) {
-                        int cantidadMonedas = jugador.getMonedas();
-                        if (cantidadMonedas >= 5) {
-                            ((Gasolina) element).playGasolinaSound();
-                            jugador.recargarConbustible(cantidadMonedas);
-                            cantidadMonedas -= 5;
-                            jugador.setMonedas(cantidadMonedas);
-                        } else {
-                            mensajePantalla = "Monedas insuficientes, no se recarga.";
-                            tiempoMensaje = System.currentTimeMillis(); //
-                            repaint();
-                        }
-                        sprites.remove(element);
-                    }
-//                    else {
-//                        System.out.println("ERROR: GameField.processCollisionMotorbike. Tipo desconocido de ElementType");
-//                    }
-                }
+            if (jugador.checkCollision(element)) {
+                manejarColision(element);
             }
         }
     }
+
+    private List<Sprite> copiarSprites() {
+        return new ArrayList<>(sprites);
+    }
+
+    private boolean esElementoColisionable(Sprite sprite) {
+        return sprite instanceof ElementType;
+    }
+
+    private void manejarColision(ElementType element) {
+        if (element instanceof Car || element instanceof Person) {
+            procesarColisionConObstaculo(element);
+        } else if (element instanceof Currency) {
+            procesarColisionConMoneda((Currency) element);
+        } else if (element instanceof Gasolina) {
+            procesarColisionConGasolina((Gasolina) element);
+        }
+    }
+
+    private void procesarColisionConObstaculo(ElementType element) {
+        ReproducirSonido.playRandomEffectSound();
+        jugador.eliminarVida();
+        sprites.remove(element);
+
+        if (jugadorSinVidas()) {
+            finalizarPartida();
+            return;
+        }
+
+        addPolice();
+        PoliceCaughtProcess();
+    }
+
+    private void procesarColisionConMoneda(Currency moneda) {
+        moneda.playCurrencySound();
+        jugador.recogerMoneda();
+        sprites.remove(moneda);
+    }
+
+    private void procesarColisionConGasolina(Gasolina gasolina) {
+        if (jugadorTieneMonedasSuficientes()) {
+            gasolina.playGasolinaSound();
+            recargarCombustible();
+        } else {
+            mostrarMensajeMonedasInsuficientes();
+        }
+        sprites.remove(gasolina);
+    }
+    
+    private boolean jugadorSinVidas() {
+        return jugador.getCantidadVidas() <= 0;
+    }
+
+    private boolean jugadorTieneMonedasSuficientes() {
+        return jugador.getMonedas() >= 5;
+    }
+
+    private void recargarCombustible() {
+        int monedas = jugador.getMonedas();
+        jugador.recargarConbustible(monedas);
+        jugador.setMonedas(monedas - 5);
+    }
+
+    private void mostrarMensajeMonedasInsuficientes() {
+        mensajePantalla = "Monedas insuficientes, no se recarga.";
+        tiempoMensaje = System.currentTimeMillis();
+        repaint();
+    }
+
 
     @Override
     public void paint(Graphics g) {
