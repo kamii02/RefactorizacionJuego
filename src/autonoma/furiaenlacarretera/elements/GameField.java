@@ -330,36 +330,28 @@ public class GameField extends SpriteContainer {
         }
     }
 
-    /**
-     * Finaliza la partida actual.
-     *
-     *
-     * elimina todos los sprites del campo de juego, refresca la pantalla y
-     * muestra un mensaje de finalización en la consola. Si el contenedor del
-     * juego es una ventana la cierra automáticamente.
-     */
-    public void finalizarPartida() {
-        this.partidaTerminada = true; // Detener la lógica del juego
-        if (contadorTiempo != null && contadorTiempo.isAlive()) {
-            contadorTiempo.interrupt();  // Detener el hilo correctamente
+    private void interrumpirHilo(Thread hilo) {
+        if (hilo.isAlive()) { // Ya nunca será null
+            hilo.interrupt();
         }
-        Thread hiloCombustible = jugador.consumirConbustible();
-        if (hiloCombustible != null && hiloCombustible.isAlive()) {
-            hiloCombustible.interrupt(); // Detener el hilo correctamente
-        }
+    }
 
-        Thread hiloGasolina = iniciarGasolina();
-        if (hiloGasolina != null && hiloGasolina.isAlive()) {
-            hiloGasolina.interrupt(); // Detener el hilo correctamente
-        }
+    public void finalizarPartida() {
+        this.partidaTerminada = true;
+
+        // Todos los hilos devuelven NullThread si no existen
+        interrumpirHilo(contadorTiempo);
+        interrumpirHilo(jugador.consumirConbustible());
+        interrumpirHilo(iniciarGasolina());
 
         this.sprites.clear();
         this.refresh();
-        //System.out.println("Partida finalizada.");
+
         if (gameContainer instanceof GameWindow) {
             ((GameWindow) gameContainer).terminarPartida();
         }
     }
+
 
     public void menejarCombustible() {
         jugador.consumirConbustible();
