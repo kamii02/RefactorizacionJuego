@@ -18,6 +18,12 @@ import java.util.Collections;
  * @since 2025-05-20
  */
 public class Score {
+    
+    /**
+     * Número máximo de puntajes almacenados.
+     */
+    private static final int MAX_PUNTAJES = 10;
+    
     /**
      * Archivo donde se almacenan los puntajes.
      */
@@ -42,55 +48,48 @@ public class Score {
      */
     public Score(String rutaArchivo) throws IOException {
         this.archivoPuntajes = new File(rutaArchivo);
+
         if (!archivoPuntajes.exists()) {
-            archivoPuntajes.createNewFile(); // Crea el archivo si no existe
+            archivoPuntajes.createNewFile();
         }
+
         this.lector = new LectorArchivoTextoPlano();
         this.escritor = new EscritorArchivoTextoPlano(rutaArchivo);
     }
 
     /**
-     * Guarda un nuevo puntaje en el archivo.
-     * El método lee los puntajes existentes, agrega el nuevo puntaje,
-     * ordena la lista de mayor a menor y conserva solo los 10 mejores puntajes.
+     * Guarda un nuevo puntaje manteniendo solo los mejores MAX_PUNTAJES.
      *
-     * @param nuevoPuntaje Puntaje que se desea guardar.
-     * @throws IOException Si ocurre un error al leer o escribir en el archivo.
+     * @param nuevoPuntaje Puntaje a guardar.
+     * @throws IOException Si ocurre un error de lectura o escritura.
      */
     public void guardarPuntaje(int nuevoPuntaje) throws IOException {
-        ArrayList<String> lineas = lector.leer(archivoPuntajes.getPath());
-        ArrayList<Integer> puntajes = new ArrayList<>();
-
-        for (String linea : lineas) {
-            if (!linea.isBlank()) {
-                puntajes.add(Integer.parseInt(linea.trim()));
-            }
-        }
-
-        puntajes.add(nuevoPuntaje);
-        Collections.sort(puntajes, Collections.reverseOrder()); // Mayor a menor
-
-        if (puntajes.size() > 10) {
-            puntajes = new ArrayList<>(puntajes.subList(0, 10));
-        }
-
-        ArrayList<String> nuevasLineas = new ArrayList<>();
-        for (int p : puntajes) {
-            nuevasLineas.add(String.valueOf(p));
-        }
-
-        escritor.escribir(nuevasLineas, archivoPuntajes.getPath());
+        ArrayList<Integer> puntajes = obtenerPuntajesDesdeArchivo();
+        agregarYOrdenarPuntaje(puntajes, nuevoPuntaje);
+        guardarEnArchivo(puntajes);
     }
 
     /**
-     * Lee todos los puntajes almacenados en el archivo.
-     * Convierte cada linea leida en un entero, omitiendo líneas en blanco.
+     * Lee todos los puntajes almacenados.
      *
-     * @return Una lista con los puntajes almacenados.
+     * @return Lista de puntajes.
      * @throws IOException Si ocurre un error al leer el archivo.
      */
     public ArrayList<Integer> leerPuntajes() throws IOException {
         ArrayList<String> lineas = lector.leer(archivoPuntajes.getPath());
+        return convertirLineasAPuntajes(lineas);
+    }
+
+    /* ============================= */
+    /* MÉTODOS PRIVADOS REFACTORIZADOS */
+    /* ============================= */
+
+    private ArrayList<Integer> obtenerPuntajesDesdeArchivo() throws IOException {
+        ArrayList<String> lineas = lector.leer(archivoPuntajes.getPath());
+        return convertirLineasAPuntajes(lineas);
+    }
+
+    private ArrayList<Integer> convertirLineasAPuntajes(ArrayList<String> lineas) {
         ArrayList<Integer> puntajes = new ArrayList<>();
 
         for (String linea : lineas) {
@@ -102,4 +101,27 @@ public class Score {
         return puntajes;
     }
 
+    private void agregarYOrdenarPuntaje(ArrayList<Integer> puntajes, int nuevoPuntaje) {
+        puntajes.add(nuevoPuntaje);
+        Collections.sort(puntajes, Collections.reverseOrder());
+
+        if (puntajes.size() > MAX_PUNTAJES) {
+            puntajes.subList(MAX_PUNTAJES, puntajes.size()).clear();
+        }
+    }
+
+    private void guardarEnArchivo(ArrayList<Integer> puntajes) throws IOException {
+        ArrayList<String> nuevasLineas = convertirPuntajesALineas(puntajes);
+        escritor.escribir(nuevasLineas, archivoPuntajes.getPath());
+    }
+
+    private ArrayList<String> convertirPuntajesALineas(ArrayList<Integer> puntajes) {
+        ArrayList<String> lineas = new ArrayList<>();
+
+        for (int puntaje : puntajes) {
+            lineas.add(String.valueOf(puntaje));
+        }
+
+        return lineas;
+    }
 }
